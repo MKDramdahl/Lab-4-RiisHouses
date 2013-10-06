@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#define BUF_SIZE 1024
 
 bool is_vowel(char c) {
   int i;
@@ -25,34 +28,54 @@ int copy_non_vowels(int num_chars, char* in_buf, char* out_buf) {
 }
 
 void disemvowel(FILE* inputFile, FILE* outputFile) {
-  fseek(inputFile, 0, SEEK_END);
-  int num_chars = ftell(inputFile);
-  fseek(inputFile, 0, SEEK_SET);
+  int num_chars = BUF_SIZE;
   char in_buf[num_chars];
-  fgets(in_buf, num_chars, inputFile);
   char out_buf[num_chars];
-  copy_non_vowels(num_chars, in_buf, out_buf);
-  fputs(out_buf, outputFile);
+  while (fgets(in_buf, num_chars, inputFile) != NULL) {
+    copy_non_vowels(num_chars, in_buf, out_buf);
+    if (outputFile == 0) {
+      printf("%s\n", out_buf);
+    } else {
+      fputs(out_buf, outputFile);
+    }
+  }
 }
 
 int main(int argc, char *argv[]) {
-  FILE *inputFile = fopen(argv[1], "r");
+  FILE *inputFile;
   FILE *outputFile;
 
-  if ((argc != 2) || (argc != 3)) {
-    printf("Incorrect Number of Arguments\n");
-  } else if (argc == 2) {
-    if (inputFile == 0) {
-      fputs(argv[1], inputFile);
+  switch (argc) {
+  case 1:
+    inputFile = stdin;
+    outputFile = stdout;
+    break;
+  case 2:
+    if ((inputFile = fopen(argv[1], "r")) == NULL) {
+      puts("Cannot Open Input File\n");
+      exit(0);
     }
-  } else {
-    if (inputFile == 0) {
-      fputs(argv[1], inputFile);
+    outputFile = stdout;
+    break;
+  case 3:
+    if ((inputFile = fopen(argv[1], "r")) == NULL) {
+      puts("Cannot Open Input File\n");
+      exit(0);
     }
-    outputFile = fopen(argv[2], "w");
+    if ((outputFile = fopen(argv[2], "w")) == NULL) {
+      puts("Cannot Open Output File\n");
+      exit(0);
+    }
+    break;
+  default:
+    puts("Wrong Parameters\n");
+    exit(0);
   }
 
   disemvowel(inputFile, outputFile);
+
+  fclose(inputFile);
+  fclose(outputFile);
 
   return 0;
 }
