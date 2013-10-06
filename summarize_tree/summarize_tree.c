@@ -16,6 +16,12 @@ bool is_dir(const char* path) {
    * return value from stat in case there is a problem, e.g., maybe the
    * the file doesn't actually exist.
    */
+  struct stat buf;
+  if (stat(path, &buf) != 0){
+    printf("File does not exist: is_dir ln 20.\n");
+    exit(0);
+  }
+  return S_ISDIR(buf.st_mode);
 }
 
 /* 
@@ -36,12 +42,37 @@ void process_directory(const char* path) {
    * with a matching call to chdir() to move back out of it when you're
    * done.
    */
+  if(chdir(path) != 0){
+    printf("Could not change directory: process_directory ln 45.\n");
+    exit(0);
+  }
+  num_dirs++;
+  if(opendir(path) == 0){
+    printf("Path does not exist: process_directory ln 49.\n");
+    exit(0);
+  }
+  struct dirent dp;
+  while((dp = readdir(path)) != NULL) {
+    if(strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0) {
+      continue;
+    }
+    process_path(path);
+  }
+  if(closedir(path) == 0){
+    printf("Path does not exist: process_directory ln 60.\n");
+    exit(0);
+  }
+  if(chdir("..") != 0){
+    printf("Could not change directory: process_directory ln 64.\n");
+    exit(0);
+  }
 }
 
 void process_file(const char* path) {
   /*
    * Update the number of regular files.
    */
+  num_regular++;
 }
 
 void process_path(const char* path) {
