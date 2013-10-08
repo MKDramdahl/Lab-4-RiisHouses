@@ -21,9 +21,9 @@ bool is_dir(const char* path) {
     printf("File does not exist: is_dir ln 20.\n");
     exit(0);
   }
-  stat(path, buf);
+  //stat(path, buf);
   bool result = S_ISDIR(buf->st_mode);
-  printf("%d\n", result);
+  free(buf);
   return result;
 }
 
@@ -45,35 +45,26 @@ void process_directory(const char* path) {
    * with a matching call to chdir() to move back out of it when you're
    * done.
    */
-  if(chdir(path) != 0){
+   num_dirs++;
+   if(chdir(path) != 0){
     printf("Could not change directory: process_directory ln 45.\n");
     exit(0);
-  }
+   }
 
-  // chdir(path);
-  struct dirent *dp;
-  DIR *dd = opendir(".");
-  num_dirs++;
-  if(dd == 0){
-    printf("Path does not exist. Cannot open the path.\n");
-    exit(0);
-  }
+   struct dirent *dp;
+   DIR *dd = opendir(".");
 
-  while((dp = readdir(dd)) != NULL) {
+   if(dd == 0){
+     printf("Path does not exist. Cannot open the path.\n");
+     exit(0);
+   }
+   while((dp = readdir(dd)) != NULL) {
     if(strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0) {
-      process_path(path);
+      process_path(dp->d_name);
     }
-  }
-  if(closedir(dd) == 0){
-    printf("Path does not exist: process_directory ln 66.\n");
-    exit(0);
-  }
-  if(chdir("..") != 0){
-    printf("Could not change directory: process_directory ln 70.\n");
-    exit(0);
-  }
-  // chdir("..");
-  
+   }
+   closedir(dd);
+   chdir("..");
 }
 
 void process_file(const char* path) {
@@ -85,10 +76,8 @@ void process_file(const char* path) {
 
 void process_path(const char* path) {
   if (is_dir(path)) {
-    printf("is dir\n");
     process_directory(path);
   } else {
-    printf("is file\n");
     process_file(path);
   }
 }
